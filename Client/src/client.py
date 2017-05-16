@@ -19,7 +19,7 @@ def quitance(s):
 	s.close()
 	exit()
 
-TCP_IP = '10.78.22.118'
+TCP_IP = '127.0.0.1'
 TCP_PORT = 5005
 BUFFER_SIZE = 1024
 print('Welcome to Typespeed 1.0!')
