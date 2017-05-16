@@ -18,7 +18,7 @@ def quitance(s):
 	s.close()
 	exit()
 
-TCP_IP = '127.0.0.1'
+TCP_IP = '10.78.22.118'
 TCP_PORT = 5005
 BUFFER_SIZE = 1024
 print('Welcome to Typespeed 1.0!')
@@ -33,9 +33,9 @@ while 1:
 	print('2 - register')
 	print('3 - exit')
 	wybor = input()
-	if wybor!= 1 or wybor!= 2 or wybor != 3
+	if not wybor in [1,2,3]:
 		print('Wrong choice, try again')
-	else
+	else:
 		success, message = a[wybor-1](s)
 		if success:
 			print(message)
