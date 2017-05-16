@@ -11,6 +11,7 @@ def register(s):
 	log = raw_input('Login: ')
 	passw = raw_input('Password: ')
 	s.send('r '+log+' '+passw)
+	data = s.recv(BUFFER_SIZE)
 	success,message = data.split(' ',1)
 	return success, message
 def quitance(s):
