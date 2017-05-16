@@ -37,5 +37,15 @@ while 1:
 		print('Wrong choice, try again')
 	else
 		success, message = a[wybor-1](s)
+		if success:
+			print(message)
+			print('Choose an option:')
+			print('1 - single')
+			print('2 - versus')
+			print('3 - show highscores')
+			print('4 - exit')
+		else:
+			print(message)
+			
 
 
