@@ -38,7 +38,7 @@ while 1:
 		print('Wrong choice, try again')
 	else:
 		success, message = a[wybor-1](s)
-		if success:
+		if success=='1':
 			print(message)
 			print('Choose an option:')
 			print('1 - single')
