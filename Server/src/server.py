@@ -25,38 +25,48 @@ def wait_for_connection():
 def connection(conn):       #TODO maciekniewielki finish
     logged_in = 0
     login = ""
+
+    def send_string(s):
+        conn.send(s.encode())
+
     while not logged_in:
-        data = conn.recv(BUFFER_SIZE)
+        data = conn.recv(BUFFER_SIZE).decode()
         if not data.count(" ") == 2:
             print("Bad data")
-            conn.send("0 %s" % "Bad data formatting. Do not use spaces in login or password")
+            send_string("0 %s" % "Bad data formatting. Do not use spaces in login or password")
             continue
         option, login, password = data.split(" ")
+        print("option %s, login %s, password %s", option, login, password)
         if option == "r":
             try:
                 register_user(login, password)
             except (ValidationException, NameTaken) as e:
-                conn.send("0 %s" % e.value)
+                send_string("0 %s" % e.value)
                 continue
+            send_string("1 You have been registered and logged in. Your highscore is 0")
+            logged_in = 1
         elif option == "l":
             user = [user for user in user_data if user[0] == login]
             if user:
                 if check_password(login, password):
                     logged_in = 1
+                    print(user)
+                    send_string("1 Welcome %s! Your highscore is %s" % (login, user[0][2]))
                 else:
-                    conn.send("0  Wrong password for user %s" % login)
+                    send_string("0  Wrong password for user %s" % login)
                     continue
             else:
-                conn.send("0  No user %s in database" % login)
+                send_string("0  No user %s in database" % login)
                 continue
     print("%s has logged in" % login)
+    conn.close()
 
 
 def start_server():     # TODO maciekniewielki init user connections, open ports
     try:
         with open(data_file, "r") as file:
             for line in file:
-                user_data.append(line.split(" "))
+                user_data.append(line[:-1].split(" "))
     except FileNotFoundError:
         open(data_file, "w").close()
 
@@ -81,6 +91,7 @@ def register_user(nick, password):
     user = nick, hashed_password, 0
     user_data.append(user)
     _write_user_(user)
+    print("Registered user", user)
 
 
 def check_password(nick, password):
