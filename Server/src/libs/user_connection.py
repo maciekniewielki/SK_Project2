@@ -1,55 +1,69 @@
 import socket
 import threading
 import Server.src.libs.constants as constants
-import Server.src.server as server
+import Server.src.server
 from Server.src.libs.errors import NameTaken, ValidationException
 
 
 class ClientConnection(threading.Thread):
     lock = threading.Lock()
 
-    def __init__(self, connection):
+    def __init__(self, game_server, connection, address):
         super().__init__()
+        self.game_server = game_server
         self.connection = connection
+        self.address = address
 
     def send_string(self, s):
         self.connection.send(s.encode())
 
-    def run(self):       # TODO maciekniewielki finish
-        logged_in = 0
-        login = ""
+    def try_login(self, login, password):
+        with ClientConnection.lock:
+            exists = self.game_server.exits_user(login)
+        if exists:
+            with ClientConnection.lock:
+                result = self.game_server.check_password(login, password)
+            if result:
+                return True
+            else:
+                self.send_string("0  Wrong password for user %s" % login)
+        else:
+            self.send_string("0  No user %s in database" % login)
+        return False
+
+    def try_register(self, login, password):
+        try:
+            with ClientConnection.lock:
+                self.game_server.register_user(login, password)
+        except (ValidationException, NameTaken) as e:
+            self.send_string("0 %s" % e.value)
+            return False
+        return True
+
+    def accept_connection(self):
+        logged_in = False
 
         while not logged_in:
-            data = self.connection.recv(constants.BUFFER_SIZE).decode()
+            try:
+                data = self.connection.recv(constants.BUFFER_SIZE).decode()
+            except ConnectionAbortedError:
+                print("User %s has disconnected" % (self.address,))
+                self.connection.close()
+                return None
             if not data.count(" ") == 2:
-                print("Bad data")
                 self.send_string("0 %s" % "Bad data formatting. Do not use spaces in login or password")
                 continue
             option, login, password = data.split(" ")
-            print("option %s, login %s, password %s" % (option, login, password))
             if option == "r":
-                try:
-                    with ClientConnection.lock:
-                        server.register_user(login, password)
-
-                except (ValidationException, NameTaken) as e:
-                    self.send_string("0 %s" % e.value)
-                    continue
-                self.send_string("1 You have been registered and logged in. Your highscore is 0")
-                logged_in = 1
+                logged_in = self.try_register(login, password)
             elif option == "l":
-                print(server.user_data)
-                if login in server.user_data:
-                    with ClientConnection.lock:
-                        result = server.check_password(login, password)
-                    if result:
-                        logged_in = 1
-                        self.send_string("1 Welcome %s! Your highscore is %s" % (login, server.user_data[login][1]))
-                    else:
-                        self.send_string("0  Wrong password for user %s" % login)
-                        continue
-                else:
-                    self.send_string("0  No user %s in database" % login)
-                    continue
+                logged_in = self.try_login(login, password)
+        return login
+
+    def run(self):
+        login = self.accept_connection()
+        with ClientConnection.lock:
+            highscore = self.game_server.get_highscore(login)
+        self.send_string("1 You have been logged in as %s. Your highscore is %d" % (login, highscore))
         print("%s has logged in" % login)
         self.connection.close()
