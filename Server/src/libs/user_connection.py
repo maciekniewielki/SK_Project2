@@ -14,6 +14,15 @@ class ClientConnection(threading.Thread):
         self.connection = connection
         self.address = address
 
+    def receive_data(self):
+        try:
+            data = self.connection.recv(constants.BUFFER_SIZE).decode()
+        except ConnectionAbortedError:
+            print("User %s has disconnected" % (self.address,))
+            self.connection.close()
+            return None
+        return data
+
     def send_string(self, s):
         self.connection.send(s.encode())
 
@@ -44,26 +53,62 @@ class ClientConnection(threading.Thread):
         logged_in = False
 
         while not logged_in:
-            try:
-                data = self.connection.recv(constants.BUFFER_SIZE).decode()
-            except ConnectionAbortedError:
-                print("User %s has disconnected" % (self.address,))
-                self.connection.close()
+            data = self.receive_data()
+            if data is None:
                 return None
+
             if not data.count(" ") == 2:
                 self.send_string("0 %s" % "Bad data formatting. Do not use spaces in login or password")
                 continue
             option, login, password = data.split(" ")
+
             if option == "r":
                 logged_in = self.try_register(login, password)
             elif option == "l":
                 logged_in = self.try_login(login, password)
         return login
 
+    def single_player(self):
+        with ClientConnection.lock:
+            words = self.game_server.get_random_words()
+
+        game_ended = False
+        score = 0
+
+        current_word = words.pop()
+        self.send_string(current_word)
+        while not game_ended:
+            correct = False
+            while not correct:
+                typed_word = self.receive_data()
+                if typed_word is None:
+                    return None
+                elif typed_word == "#":
+                    return score
+                elif typed_word == current_word:
+                    score += 1
+                    correct = True
+                else:
+                    self.send_string("0")
+            current_word = words.pop()
+            self.send_string("1 "+current_word)
+
     def run(self):
         login = self.accept_connection()
+        if not login:
+            return
         with ClientConnection.lock:
             highscore = self.game_server.get_highscore(login)
         self.send_string("1 You have been logged in as %s. Your highscore is %d" % (login, highscore))
         print("%s has logged in" % login)
+        data = self.receive_data()
+        if data is None:
+            return
+        elif data == "s":
+            score = self.single_player()
+            if score is None:
+                return
+            print("%s has scored %d" % (login, score))
+
+
         self.connection.close()

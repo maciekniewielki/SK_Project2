@@ -5,6 +5,7 @@ import re           # for checking if nicks and passwords are valid
 from Server.src.libs.errors import NameTaken, ValidationException
 import Server.src.libs.constants as constants
 import Server.src.libs.user_connection
+import random
 
 
 class GameServer:                   # TODO maciekniewielki add port and data file in constructor
@@ -12,6 +13,24 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
     def __init__(self):
         self.user_data = {}
         self.client_threads = []
+        self.word_list = []
+
+    def load_user_data(self):
+        try:
+            with open(constants.DATA_FILE, "r") as file:
+                for line in file:
+                    login, hashed_password, highscore = line[:-1].split(" ")
+                    self.user_data[login] = (hashed_password, int(highscore))
+        except FileNotFoundError:
+            open(constants.DATA_FILE, "w").close()
+
+    def load_word_list(self):
+        try:
+            with open(constants.WORDS_FILE, "r") as file:
+                for line in file:
+                    self.word_list.append(line[:-1])
+        except FileNotFoundError:
+            open(constants.WORDS_FILE, "w").close()
 
     def wait_for_connection(self):  # TODO maciekniewielki add maximum number of connections
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,13 +48,8 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
                 self.client_threads = [user_thread]
 
     def start_server(self):
-        try:
-            with open(constants.DATA_FILE, "r") as file:
-                for line in file:
-                    login, hashed_password, highscore = line[:-1].split(" ")
-                    self.user_data[login] = (hashed_password, int(highscore))
-        except FileNotFoundError:
-            open(constants.DATA_FILE, "w").close()
+        self.load_user_data()
+        self.load_word_list()
         self.wait_for_connection()
 
     def _write_user_(self, user):
@@ -69,6 +83,10 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
 
     def exits_user(self, nick):
         return nick in self.user_data
+
+    def get_random_words(self, quantity=60):
+        words = [random.choice(self.word_list) for _ in range(quantity)]
+        return words
 
 
 def main():
