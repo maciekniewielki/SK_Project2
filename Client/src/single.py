@@ -17,7 +17,7 @@ def play(s):
 	
 	while time() - timer < 60:
 		wordIn = s.recv(constants.BUFFER_SIZE)
-		print(WordIn)
+		print(wordIn)
 		wordOut=input()
 		s.send(wordOut)
 	finish(s)
