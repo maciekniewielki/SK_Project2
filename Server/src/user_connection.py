@@ -76,6 +76,7 @@ class ClientConnection(threading.Thread):
         score = 0
 
         current_word = words.pop()
+        print("current word = %s" % current_word)
         self.send_string(current_word)
         while not game_ended:
             correct = False
@@ -91,6 +92,7 @@ class ClientConnection(threading.Thread):
                 else:
                     self.send_string(current_word)
             current_word = words.pop()
+            print("current word = %s" % current_word)
             self.send_string(current_word)
 
     def run(self):
