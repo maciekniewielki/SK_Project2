@@ -1,8 +1,8 @@
-import socket
 import threading
-import Server.src.libs.constants as constants
-import Server.src.server
-from Server.src.libs.errors import NameTaken, ValidationException
+
+from resources.errors import NameTaken, ValidationException
+
+import resources.constants as constants
 
 
 class ClientConnection(threading.Thread):
@@ -89,9 +89,9 @@ class ClientConnection(threading.Thread):
                     score += 1
                     correct = True
                 else:
-                    self.send_string("0")
+                    self.send_string(current_word)
             current_word = words.pop()
-            self.send_string("1 "+current_word)
+            self.send_string(current_word)
 
     def run(self):
         login = self.accept_connection()
@@ -105,10 +105,13 @@ class ClientConnection(threading.Thread):
         if data is None:
             return
         elif data == "s":
+            print("%s has started singleplayer" % login)
             score = self.single_player()
             if score is None:
                 return
+            if score > highscore:
+                with ClientConnection.lock:
+                    self.game_server.update_high_score(login, highscore)
             print("%s has scored %d" % (login, score))
-
 
         self.connection.close()

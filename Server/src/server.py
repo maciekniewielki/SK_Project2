@@ -1,11 +1,12 @@
-import socket
-import hashlib      # for hashing passwords
-import re           # for checking if nicks and passwords are valid
-
-from Server.src.libs.errors import NameTaken, ValidationException
-import Server.src.libs.constants as constants
-import Server.src.libs.user_connection
+import hashlib  # for hashing passwords
 import random
+import re  # for checking if nicks and passwords are valid
+import socket
+
+from resources.errors import NameTaken, ValidationException
+
+import user_connection
+import resources.constants as constants
 
 
 class GameServer:                   # TODO maciekniewielki add port and data file in constructor
@@ -16,6 +17,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         self.word_list = []
 
     def load_user_data(self):
+        print("Loading user data")
         try:
             with open(constants.DATA_FILE, "r") as file:
                 for line in file:
@@ -25,6 +27,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
             open(constants.DATA_FILE, "w").close()
 
     def load_word_list(self):
+        print("Loading word list")
         try:
             with open(constants.WORDS_FILE, "r") as file:
                 for line in file:
@@ -36,11 +39,11 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((constants.SERVER_IP, constants.SERVER_PORT))
         s.listen(1)
-
+        print("Waiting for clients")
         while True:
             conn, addr = s.accept()
             print("Connection from", addr)
-            user_thread = Server.src.libs.user_connection.ClientConnection(self, conn, addr)
+            user_thread = user_connection.ClientConnection(self, conn, addr)
             user_thread.start()
             if self.client_threads:
                 self.client_threads = [x for x in self.client_threads if x.is_alive()] + [user_thread]
@@ -48,6 +51,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
                 self.client_threads = [user_thread]
 
     def start_server(self):
+        print("Starting server")
         self.load_user_data()
         self.load_word_list()
         self.wait_for_connection()
@@ -87,6 +91,16 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
     def get_random_words(self, quantity=60):
         words = [random.choice(self.word_list) for _ in range(quantity)]
         return words
+
+    def save_user_data(self):
+        with open(constants.DATA_FILE, "w") as file:
+            for login, data in self.user_data:
+                line = "%s %s %d\n" % (login, data[0], data[1])
+                file.write(line)
+
+    def update_highscore(self, nick, highscore):
+        self.user_data[nick] = (self.user_data[nick][0], highscore)
+        self.save_user_data()
 
 
 def main():
