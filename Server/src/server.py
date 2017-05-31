@@ -38,7 +38,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
 
     def wait_for_connection(self):  # TODO maciekniewielki add maximum number of connections
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((constants.SERVER_IP, constants.SERVER_PORT))
+        s.bind(("", constants.SERVER_PORT))
         s.listen(1)
         print("Waiting for clients")
         while True:
