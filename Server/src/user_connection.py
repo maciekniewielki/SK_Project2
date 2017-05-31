@@ -103,22 +103,24 @@ class ClientConnection(threading.Thread):
             highscore = self.game_server.get_highscore(login)
         self.send_string("1 You have been logged in as %s. Your highscore is %d" % (login, highscore))
         print("%s has logged in" % login)
-        data = self.receive_data()
-        if data is None:
-            return
-        elif data == "s":
-            print("%s has started singleplayer" % login)
-            score = self.single_player()
-            if score is None:
+        while True:
+            data = self.receive_data()
+            if data is None:
                 return
-            print("%s has scored %d" % (login, score))
-            if score > highscore:
-                with ClientConnection.lock:
-                    self.game_server.update_highscore(login, score)
-                self.send_string("Congratulations! You have beaten your previous highscore of %d. Your new highscore "
-                                 "is %d", highscore, score)
-            else:
-                self.send_string("You scored %d", score)
-
+            elif data == "s":
+                print("%s has started singleplayer" % login)
+                score = self.single_player()
+                if score is None:
+                    return
+                print("%s has scored %d" % (login, score))
+                if score > highscore:
+                    with ClientConnection.lock:
+                        self.game_server.update_highscore(login, score)
+                    self.send_string("Congratulations! You have beaten your previous highscore of %d. Your new "
+                                     "highscore is %d" % (highscore, score))
+                else:
+                    self.send_string("You scored %d" % score)
+            elif data == "d":
+                break
 
         self.connection.close()
