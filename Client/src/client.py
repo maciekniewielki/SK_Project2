@@ -2,6 +2,7 @@ import socket
 import constants
 import single
 import high
+import sys
 
 def login(s):
 	log = raw_input('Login: ')
@@ -38,11 +39,14 @@ def loggedInMenu():
 a = [login,register,quitance]
 
 print('Welcome to Typespeed 1.0!')
-
+try:
+	SERVER_IP = sys.argv[1]
+except:
+	print("No server IP given")
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-	s.connect((constants.SERVER_IP, constants.SERVER_PORT))
-except (ConnectionRefusedError, TimeoutError):
+	s.connect((SERVER_IP, constants.SERVER_PORT))
+except socket.error:
 	print('No server found :(')
 	exit()
 
