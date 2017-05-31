@@ -17,10 +17,12 @@ def play(s):
 	
 	while time() - timer < 60:
 		wordIn = s.recv(constants.BUFFER_SIZE)
-		print(wordIn)
+		print('type: '+wordIn)
 		wordOut=raw_input()
 		s.send(wordOut)
 	finish(s)
 def finish(s):
 	s.send('#')
-	print('Koniec gry')
+	print('Time is up!')
+	score=s.recv(constants.BUFFER_SIZE)
+	print(score)
