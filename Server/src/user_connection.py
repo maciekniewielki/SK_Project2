@@ -76,7 +76,6 @@ class ClientConnection(threading.Thread):
         score = 0
 
         current_word = words.pop()
-        print("current word = %s" % current_word)
         self.send_string(current_word)
         while not game_ended:
             correct = False
@@ -92,7 +91,6 @@ class ClientConnection(threading.Thread):
                 else:
                     self.send_string(current_word)
             current_word = words.pop()
-            print("current word = %s" % current_word)
             self.send_string(current_word)
 
     def run(self):
@@ -120,7 +118,11 @@ class ClientConnection(threading.Thread):
                                      "highscore is %d" % (highscore, score))
                 else:
                     self.send_string("You scored %d" % score)
-            elif data == "d":
+            elif data == "h":
+                with ClientConnection.lock:
+                    best = self.game_server.get_best_highscores_string()
+                self.send_string(best)
+            else:
                 break
-
+        print("User %s has logged out" % (self.address,))
         self.connection.close()

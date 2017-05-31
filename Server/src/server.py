@@ -15,6 +15,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         self.user_data = {}
         self.client_threads = []
         self.word_list = []
+        self.best_highscores = []
 
     def load_user_data(self):
         print("Loading user data")
@@ -54,6 +55,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         print("Starting server")
         self.load_user_data()
         self.load_word_list()
+        self.update_best_highscores()
         self.wait_for_connection()
 
     def _write_user_(self, user):
@@ -73,6 +75,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         self.user_data[nick] = (hashed_password, 0)
         user = nick, hashed_password, 0
         self._write_user_(user)
+        self.update_best_highscores()
         print("Registered user", user[0])
 
     def check_password(self, nick, password):
@@ -101,6 +104,23 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
     def update_highscore(self, nick, highscore):
         self.user_data[nick] = (self.user_data[nick][0], highscore)
         self.save_user_data()
+        self.update_best_highscores()
+
+    def update_best_highscores(self):
+        all_highscores = []
+        for login, data in self.user_data.items():
+            all_highscores.append((login, data[1]))
+        all_highscores.sort(key=lambda x: x[1], reverse=True)
+        self.best_highscores = all_highscores[:3]
+
+    def get_best_highscores_string(self):
+        places = []
+        for index, player in enumerate(self.best_highscores):
+            line = "%d. %s %d" % (index+1, player[0], player[1])
+            places.append(line)
+        if not places:
+            return "There are no current highscores"
+        return "\n".join(places)
 
 
 def main():
