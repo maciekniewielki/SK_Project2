@@ -1,52 +1,70 @@
 import socket
+import constants
+import single
 
 def login(s):
 	log = raw_input('Login: ')
 	passw = raw_input('Password: ')
 	s.send('l '+log+' '+passw)
-	data = s.recv(BUFFER_SIZE)
+	data = s.recv(constants.BUFFER_SIZE)
 	success,message = data.split(' ',1)
 	return success, message
 def register(s):
 	log = raw_input('Login: ')
 	passw = raw_input('Password: ')
 	s.send('r '+log+' '+passw)
-	data = s.recv(BUFFER_SIZE)
+	data = s.recv(constants.BUFFER_SIZE)
 	success,message = data.split(' ',1)
 	return success, message
 def quitance(s):
 	print('See ya later, aligator!')
 	s.close()
 	exit()
-
-TCP_IP = '127.0.0.1'
-TCP_PORT = 5005
-BUFFER_SIZE = 1024
-print('Welcome to Typespeed 1.0!')
-
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((TCP_IP, TCP_PORT))
-a = [login,register,quitance]
-while 1:
+def mainMenu():
 	print('Choose an option:')
 	print('1 - log in')
 	print('2 - register')
 	print('3 - exit')
-	wybor = input()
+	return input()
+def loggedInMenu():
+	print('Choose an option:')
+	print('1 - single')
+	print('2 - versus')
+	print('3 - show highscores')
+	print('4 - exit')
+	return input()
+
+a = [login,register,quitance]
+
+print('Welcome to Typespeed 1.0!')
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+	s.connect((constants.SERVER_IP, constants.SERVER_PORT))
+except (ConnectionRefusedError, TimeoutError):
+	print('No server found :(')
+	exit()
+
+while 1:
+	wybor = mainMenu()
 	if not wybor in [1,2,3]:
 		print('Wrong choice, try again')
 	else:
 		success, message = a[wybor-1](s)
 		if success=='1':
-			print(message)
-			print('Choose an option:')
-			print('1 - single')
-			print('2 - versus')
-			print('3 - show highscores')
-			print('4 - exit')
+			break
 		else:
 			print(message)
 			
-
+print(message)
+while 1:
+	wyborLog=loggedInMenu()
+	if not wyborLog in [1,2,3,4]:
+		print('Wrong choice, try again')
+	elif wyborLog in [2,3]:
+		print('Currently under construction')
+	elif wyborLog == 1:
+		single.start(s)
+	else
+		quitance(s)
 
