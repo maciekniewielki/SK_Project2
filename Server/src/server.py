@@ -94,7 +94,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
 
     def save_user_data(self):
         with open(constants.DATA_FILE, "w") as file:
-            for login, data in self.user_data:
+            for login, data in self.user_data.items():
                 line = "%s %s %d\n" % (login, data[0], data[1])
                 file.write(line)
 

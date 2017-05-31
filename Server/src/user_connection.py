@@ -111,9 +111,14 @@ class ClientConnection(threading.Thread):
             score = self.single_player()
             if score is None:
                 return
+            print("%s has scored %d" % (login, score))
             if score > highscore:
                 with ClientConnection.lock:
-                    self.game_server.update_high_score(login, highscore)
-            print("%s has scored %d" % (login, score))
+                    self.game_server.update_highscore(login, score)
+                self.send_string("Congratulations! You have beaten your previous highscore of %d. Your new highscore "
+                                 "is %d", highscore, score)
+            else:
+                self.send_string("You scored %d", score)
+
 
         self.connection.close()
