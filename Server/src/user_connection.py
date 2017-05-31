@@ -116,6 +116,7 @@ class ClientConnection(threading.Thread):
                         self.game_server.update_highscore(login, score)
                     self.send_string("Congratulations! You have beaten your previous highscore of %d. Your new "
                                      "highscore is %d" % (highscore, score))
+                    highscore = score
                 else:
                     self.send_string("You scored %d" % score)
             elif data == "h":
