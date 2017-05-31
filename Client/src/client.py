@@ -46,7 +46,7 @@ except (ConnectionRefusedError, TimeoutError):
 	exit()
 
 while 1:
-	wybor = mainMenu()
+	wybor = int(mainMenu())
 	if not wybor in [1,2,3]:
 		print('Wrong choice, try again')
 	else:
@@ -58,13 +58,13 @@ while 1:
 			
 print(message)
 while 1:
-	wyborLog=loggedInMenu()
+	wyborLog=int(loggedInMenu())
 	if not wyborLog in [1,2,3,4]:
 		print('Wrong choice, try again')
 	elif wyborLog in [2,3]:
 		print('Currently under construction')
 	elif wyborLog == 1:
 		single.start(s)
-	else
+	else:
 		quitance(s)
 
