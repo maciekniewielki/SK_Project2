@@ -25,14 +25,14 @@ def mainMenu():
 	print('1 - log in')
 	print('2 - register')
 	print('3 - exit')
-	return input()
+	return raw_input()
 def loggedInMenu():
 	print('Choose an option:')
 	print('1 - single')
 	print('2 - versus')
 	print('3 - show highscores')
 	print('4 - exit')
-	return input()
+	return raw_input()
 
 a = [login,register,quitance]
 
