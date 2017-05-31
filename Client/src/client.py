@@ -1,6 +1,7 @@
 import socket
 import constants
 import single
+import high
 
 def login(s):
 	log = raw_input('Login: ')
@@ -61,10 +62,12 @@ while 1:
 	wyborLog=int(loggedInMenu())
 	if not wyborLog in [1,2,3,4]:
 		print('Wrong choice, try again')
-	elif wyborLog in [2,3]:
+	elif wyborLog == 2:
 		print('Currently under construction')
 	elif wyborLog == 1:
 		single.start(s)
+	elif wyborLog == 3:
+		high.highscore(s)
 	else:
 		quitance(s)
 
