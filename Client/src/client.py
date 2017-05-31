@@ -2,6 +2,7 @@ import socket
 import constants
 import single
 import high
+import sys
 
 def login(s):
 	log = raw_input('Login: ')
@@ -37,12 +38,17 @@ def loggedInMenu():
 
 a = [login,register,quitance]
 
-print('Welcome to Typespeed 1.0!')
+try:
+	SERVER_IP = sys.argv[1]
+except:
+	print("No server IP given")
+	exit()
 
+print('Welcome to Typespeed 1.0!')
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-	s.connect((constants.SERVER_IP, constants.SERVER_PORT))
-except (ConnectionRefusedError, TimeoutError):
+	s.connect((SERVER_IP, constants.SERVER_PORT))
+except socket.error:
 	print('No server found :(')
 	exit()
 
@@ -62,10 +68,10 @@ while 1:
 	wyborLog=int(loggedInMenu())
 	if not wyborLog in [1,2,3,4]:
 		print('Wrong choice, try again')
-	elif wyborLog == 2:
-		print('Currently under construction')
 	elif wyborLog == 1:
 		single.start(s)
+	elif wyborLog == 2:
+		print('Currently under construction')
 	elif wyborLog == 3:
 		high.highscore(s)
 	else:
