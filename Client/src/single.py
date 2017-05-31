@@ -15,14 +15,20 @@ def start(s):
 def play(s):
 	timer = time()
 	
-	while time() - timer < 60:
+	while True:
 		wordIn = s.recv(constants.BUFFER_SIZE)
-		print('type: '+wordIn)
+		tim=time() - timer
+		if tim>60:
+			break
+		line = 'type: {:<30} time:{:>1}'.format(wordIn,int(round(tim))) 
+		print(line)
 		wordOut=raw_input()
+		while not wordOut:
+			wordOut=raw_input()
 		s.send(wordOut)
 	finish(s)
 def finish(s):
 	s.send('#')
 	print('Time is up!')
-	score=s.recv(constants.BUFFER_SIZE)
-	print(score)
+	result=s.recv(constants.BUFFER_SIZE)
+	print(result)
