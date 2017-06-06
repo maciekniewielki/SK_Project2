@@ -16,6 +16,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         self.client_threads = []
         self.word_list = []
         self.best_highscores = []
+        self.versus_queue = []
 
     def load_user_data(self):
         print("Loading user data")
@@ -121,6 +122,17 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         if not places:
             return "There are no current highscores"
         return "\n".join(places)
+
+    def add_to_versus_queue(self, client):
+        self.versus_queue.append(client)
+        print("%s is waiting for a versus match" % client.login)
+        if len(self.versus_queue) != 2:
+            return
+        word_list = self.get_random_words()
+        player_1 = self.versus_queue.pop()
+        player_2 = self.versus_queue.pop()
+        player_1.prepare_for_versus(word_list[:], player_2.login, player_2.my_versus_score)
+        player_2.prepare_for_versus(word_list[:], player_1.login, player_1.my_versus_score)
 
 
 def main():

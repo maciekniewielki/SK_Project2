@@ -3,6 +3,7 @@ import threading
 from resources.errors import NameTaken, ValidationException
 
 import resources.constants as constants
+from time import time
 
 
 class ClientConnection(threading.Thread):
@@ -13,6 +14,13 @@ class ClientConnection(threading.Thread):
         self.game_server = game_server
         self.connection = connection
         self.address = address
+        self.login = ""
+        self.versus_words = []
+        self.other_login = ""
+        self.versus_start = False
+        self.other_versus_score = [0]
+        self.my_versus_score = [0]
+        self.versus_start_time = 0
 
     def receive_data(self):
         try:
@@ -86,15 +94,50 @@ class ClientConnection(threading.Thread):
                 elif typed_word == "#":
                     return score
                 elif typed_word == current_word:
-                    score += 1
+                    score += len(current_word)
                     correct = True
                 else:
                     self.send_string(current_word)
             current_word = words.pop()
             self.send_string(current_word)
 
+    def prepare_for_versus(self, words, other_login, other_versus_score):
+        self.versus_words = words
+        self.other_login = other_login
+        self.other_versus_score = other_versus_score
+        self.versus_start_time = time()
+        self.versus_start = True
+
+    def versus(self):
+        game_ended = False
+        self.my_versus_score[0] = 0
+        self.send_string(self.other_login)
+        current_word = self.versus_words.pop()
+        current_time = int(time() - self.versus_start_time)
+        self.send_string("%s %d %d %d" % (current_word, self.my_versus_score[0], self.other_versus_score[0], 0))
+        while not game_ended:
+            correct = False
+            while not correct:
+                current_time = int(time() - self.versus_start_time)
+                typed_word = self.receive_data()
+                if current_time > 60:
+                    self.my_versus_score.append(0)
+                    while len(self.other_versus_score) < 2:
+                        pass
+                    return self.my_versus_score[0], self.other_versus_score[0]
+                elif typed_word is None:
+                    return None
+                elif typed_word == current_word:
+                    self.my_versus_score[0] += len(current_word)
+                    correct = True
+                else:
+                    self.send_string("%s %d %d %d" % (current_word, self.my_versus_score[0], self.other_versus_score[0], current_time))
+            current_word = self.versus_words.pop()
+            self.send_string("%s %d %d %d" % (current_word, self.my_versus_score[0], self.other_versus_score[0], current_time))
+
     def run(self):
         login = self.accept_connection()
+        self.login = login
         if not login:
             return
         with ClientConnection.lock:
@@ -123,7 +166,34 @@ class ClientConnection(threading.Thread):
                 with ClientConnection.lock:
                     best = self.game_server.get_best_highscores_string()
                 self.send_string(best)
+            elif data == "v":
+                self.versus_words = []
+                self.my_versus_score = [0]
+                self.versus_start = False
+                self.game_server.add_to_versus_queue(self)
+                while not self.versus_start:
+                    pass
+                score = self.versus()
+                if score is None:
+                    return
+                print("Versus: %s has scored %d, %s has scored %d" % (login, score[0], self.other_login, score[1]))
+                if score[0] > highscore:
+                    with ClientConnection.lock:
+                        self.game_server.update_highscore(login, score[0])
+                    message = "# Congratulations! You have beaten your previous highscore of {:d}. Your new highscore " \
+                              "is {:d}\n".format(highscore, score[0])
+                    highscore = score[0]
+                else:
+                    message = "# You scored %d\n" % score[0]
+
+                if score[0] > score[1]:
+                    message += "You have beaten your opponent {:d} to {:d}".format(*score)
+                elif score[0] < score[1]:
+                    message += "You have been beaten by your opponent {:d} to {:d}".format(*score)
+                else:
+                    message += "It's a draw! You both got {:d}".format(score[0])
+                self.send_string(message)
             else:
                 break
-        print("User %s has logged out" % (self.address,))
+        print("User %s has logged out" % login)
         self.connection.close()
