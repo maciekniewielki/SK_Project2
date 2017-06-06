@@ -3,19 +3,20 @@ import constants
 import single
 import high
 import sys
+import versus
 
 def login(s):
 	log = raw_input('Login: ')
 	passw = raw_input('Password: ')
-	s.send('l '+log+' '+passw)
-	data = s.recv(constants.BUFFER_SIZE)
+	constants.sending(s,'l '+log+' '+passw)
+	data = constants.receive(s)
 	success,message = data.split(' ',1)
 	return success, message
 def register(s):
 	log = raw_input('Login: ')
 	passw = raw_input('Password: ')
-	s.send('r '+log+' '+passw)
-	data = s.recv(constants.BUFFER_SIZE)
+	constants.sending(s,'r '+log+' '+passw)
+	data =constants.receive(s)
 	success,message = data.split(' ',1)
 	return success, message
 def quitance(s):
@@ -71,7 +72,7 @@ while 1:
 	elif wyborLog == 1:
 		single.start(s)
 	elif wyborLog == 2:
-		print('Currently under construction')
+		versus.start(s)
 	elif wyborLog == 3:
 		high.highscore(s)
 	else:

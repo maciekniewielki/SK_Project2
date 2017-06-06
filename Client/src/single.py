@@ -3,7 +3,7 @@ from time import sleep, time
 import constants
 
 def start(s):
-	s.send('s')
+	constants.sending(s,'s')
 	print('3...')
 	sleep(1)
 	print('2...')
@@ -16,7 +16,7 @@ def play(s):
 	timer = time()
 	
 	while True:
-		wordIn = s.recv(constants.BUFFER_SIZE)
+		wordIn = constants.receive(s)
 		tim=time() - timer
 		if tim>60:
 			break
@@ -25,10 +25,10 @@ def play(s):
 		wordOut=raw_input()
 		while not wordOut:
 			wordOut=raw_input()
-		s.send(wordOut)
+		constants.sending(s,wordOut)
 	finish(s)
 def finish(s):
-	s.send('#')
+	constants.sending(s,'#')
 	print('Time is up!')
-	result=s.recv(constants.BUFFER_SIZE)
+	result=constants.receive(s)
 	print(result)

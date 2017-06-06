@@ -2,8 +2,8 @@ import constants
 import socket
 
 def highscore(s):
-	s.send('h')
-	scores = s.recv(constants.BUFFER_SIZE)
+	constants.sending(s,'h')
+	scores = constants.receive(s)
 	print('The best players on the server are:')
 	print(scores)
 	
