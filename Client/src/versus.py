@@ -18,6 +18,7 @@ def play(s,nickname):
 	while True:
 		message = constants.receive(s)
 		if message[0] =='#':
+			print("Waiting for your opponent to finish")
 			break
 		wordIn,scoreY,scoreO, tim = message.split(' ')
 		line = 'type: {:<20} time: {} {:>10}: {} You: {}'.format(wordIn,tim,nickname,scoreO,scoreY) 

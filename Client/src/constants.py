@@ -1,4 +1,5 @@
-SERVER_PORT = 5005
+SERVER_PORT = 30005
+BROADCAST_PORT = 30006
 BUFFER_SIZE = 1024
 import socket
 def sending(s, message):

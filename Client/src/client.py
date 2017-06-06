@@ -39,16 +39,29 @@ def loggedInMenu():
 
 a = [login,register,quitance]
 
-try:
-	SERVER_IP = sys.argv[1]
-except:
-	print("No server IP given")
-	exit()
+addr = ('<broadcast>', constants.BROADCAST_PORT) 
+UDPSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#UDPSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+UDPSock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+UDPSock.sendto("Any typespeed servers around?", addr)
+UDPdata, SERVER_addr = UDPSock.recvfrom(constants.BUFFER_SIZE)
+print UDPdata
+UDPSock.close()	
+if not UDPdata=="I'm here!":
+		"No server found"
+		exit()
 
-print('Welcome to Typespeed 1.0!')
+
+#try:
+#	SERVER_IP = sys.argv[1]
+#except:
+#	print("No server IP given")
+#1	exit()
+
+print('Welcome to Typespeed 2.0!')
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-	s.connect((SERVER_IP, constants.SERVER_PORT))
+	s.connect((SERVER_addr[0], constants.SERVER_PORT))
 except socket.error:
 	print('No server found :(')
 	exit()
