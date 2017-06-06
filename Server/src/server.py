@@ -6,6 +6,7 @@ import socket
 from resources.errors import NameTaken, ValidationException
 
 import user_connection
+import localizer
 import resources.constants as constants
 
 
@@ -57,6 +58,7 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         self.load_user_data()
         self.load_word_list()
         self.update_best_highscores()
+        localizer.Localizer().start()
         self.wait_for_connection()
 
     def _write_user_(self, user):

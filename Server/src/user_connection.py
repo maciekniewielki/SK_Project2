@@ -118,8 +118,8 @@ class ClientConnection(threading.Thread):
         while not game_ended:
             correct = False
             while not correct:
-                current_time = int(time() - self.versus_start_time)
                 typed_word = self.receive_data()
+                current_time = int(time() - self.versus_start_time)
                 if current_time > 60:
                     self.my_versus_score.append(0)
                     while len(self.other_versus_score) < 2:
