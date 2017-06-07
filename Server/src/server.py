@@ -10,7 +10,7 @@ import localizer
 import resources.constants as constants
 
 
-class GameServer:                   # TODO maciekniewielki add port and data file in constructor
+class GameServer:
 
     def __init__(self):
         self.user_data = {}
@@ -18,6 +18,9 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         self.word_list = []
         self.best_highscores = []
         self.versus_queue = []
+
+    def refresh_client_threads(self):
+        self.client_threads = [x for x in self.client_threads if x.is_alive()]
 
     def load_user_data(self):
         print("Loading user data")
@@ -38,20 +41,24 @@ class GameServer:                   # TODO maciekniewielki add port and data fil
         except FileNotFoundError:
             open(constants.WORDS_FILE, "w").close()
 
-    def wait_for_connection(self):  # TODO maciekniewielki add maximum number of connections
+    def wait_for_connection(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(("", constants.SERVER_PORT))
         s.listen(1)
         print("Waiting for clients")
         while True:
             conn, addr = s.accept()
+            self.refresh_client_threads()
             print("Connection from", addr)
+            if len(self.client_threads) >= constants.MAX_CONNECTIONS:
+                conn.close()
+                print("Too many connections, couldn't connect %s" % (addr,))
+                continue
+
             user_thread = user_connection.ClientConnection(self, conn, addr)
             user_thread.start()
-            if self.client_threads:
-                self.client_threads = [x for x in self.client_threads if x.is_alive()] + [user_thread]
-            else:
-                self.client_threads = [user_thread]
+            self.client_threads.append(user_thread)
+            print("Current clients: %d" % len(self.client_threads))
 
     def start_server(self):
         print("Starting server")
