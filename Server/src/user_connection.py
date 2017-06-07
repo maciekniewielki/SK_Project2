@@ -7,6 +7,7 @@ from time import time
 
 
 class ClientConnection(threading.Thread):
+    """Base class for handling the client connection"""
     lock = threading.Lock()
 
     def __init__(self, game_server, connection, address):
@@ -23,6 +24,7 @@ class ClientConnection(threading.Thread):
         self.versus_start_time = 0
 
     def receive_data(self):
+        """Tries to receive data from client. If the Connection is closed returns None"""
         try:
             data = self.connection.recv(constants.BUFFER_SIZE).decode()
         except ConnectionAbortedError:
@@ -32,9 +34,11 @@ class ClientConnection(threading.Thread):
         return data
 
     def send_string(self, s):
+        """Sends a string to the client"""
         self.connection.send(s.encode())
 
     def try_login(self, login, password):
+        """Tries to log in the user with supplied data. Returns true on success and False otherwise"""
         with ClientConnection.lock:
             exists = self.game_server.exits_user(login)
         if exists:
@@ -49,6 +53,7 @@ class ClientConnection(threading.Thread):
         return False
 
     def try_register(self, login, password):
+        """Tries to register the user with supplied data. Returns true on success and False otherwise"""
         try:
             with ClientConnection.lock:
                 self.game_server.register_user(login, password)
@@ -58,6 +63,7 @@ class ClientConnection(threading.Thread):
         return True
 
     def accept_connection(self):
+        """Handles the server side of login menu"""
         logged_in = False
 
         while not logged_in:
@@ -77,6 +83,7 @@ class ClientConnection(threading.Thread):
         return login
 
     def single_player(self):
+        """Handles the singleplayer game using a send-receive-check loop. Returns player score."""
         with ClientConnection.lock:
             words = self.game_server.get_random_words()
 
@@ -102,6 +109,7 @@ class ClientConnection(threading.Thread):
             self.send_string(current_word)
 
     def prepare_for_versus(self, words, other_login, other_versus_score):
+        """Sets the metadata about the versus opponent and the word list. Then sets a start flag"""
         self.versus_words = words
         self.other_login = other_login
         self.other_versus_score = other_versus_score
@@ -109,6 +117,7 @@ class ClientConnection(threading.Thread):
         self.versus_start = True
 
     def versus(self):
+        """Handles the versus game. Similar to singleplayer"""
         game_ended = False
         self.my_versus_score[0] = 0
         self.send_string(self.other_login)
@@ -136,6 +145,7 @@ class ClientConnection(threading.Thread):
             self.send_string("%s %d %d %d" % (current_word, self.my_versus_score[0], self.other_versus_score[0], current_time))
 
     def run(self):
+        """Main function for handling the client thread"""
         login = self.accept_connection()
         self.login = login
         if not login:

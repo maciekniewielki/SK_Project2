@@ -4,8 +4,11 @@ import socket
 
 
 class Localizer(threading.Thread):
+    """Main class for the localizer service"""
 
     def run(self):
+        """The localizer listens on the port for message.
+        Upon receiving a special message it responds in order to supply a server ip"""
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind(("", constants.LOCALIZER_PORT))
         print("Localizer started")
