@@ -6,6 +6,10 @@ import constants
 #function initiating the single mode game
 def start(s):
 	constants.sending(s,'s')
+	print("Entering a single player game")
+	print('Type in the given words as fast as you can')
+	print('Press ENTER to submit your answer')
+	print('You will be asked to retype the words you spell incorrectly')
 	print('3...')
 	sleep(1)
 	print('2...')

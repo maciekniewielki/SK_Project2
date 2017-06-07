@@ -25,7 +25,7 @@ def register(s):
 	return success, message
 #function to exit the application
 def quitance(s):
-	print('See ya later, aligator!')
+	print('Exiting the game. See you soon!')
 	s.close()
 	exit()
 #function printing out the main menu options 

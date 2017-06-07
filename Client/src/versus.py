@@ -4,6 +4,10 @@ import constants
 #start of the versus game with awaiting to be matched with another player
 def start(s):
 	constants.sending(s,'v')
+	print("Entering a versus game")
+	print('Type in the given words as fast as you can')
+	print('Press ENTER to submit your answer')
+	print('You will be asked to retype the words you spell incorrectly')
 	print('Waiting for the other player')
 	nickname = constants.receive(s)
 	print('Connected to '+nickname)
